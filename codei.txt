@@ -1,0 +1,7 @@
+-module(chat_client).
+-behaviour(gen_server).
+
+-record(state, {handler_pid}).
+
+start_link(Name) ->
+    gen_server:start_link({local, ?SERVER}, ?MODULE, [{name, Name}], []).

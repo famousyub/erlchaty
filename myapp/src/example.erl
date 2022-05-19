@@ -1,0 +1,67 @@
+-module(example).
+
+-behavior(minirest_api).
+
+%% API
+-export([api_spec/0]).
+
+-export([hello/2]).
+-export([hello/3]).
+
+api_spec() ->
+  {
+    [hello_api()],
+    []
+  }.
+
+hello_api() ->
+    MetaData = #{
+        get => #{
+            description => "hello world",
+            responses => #{
+            <<"200">> => #{
+                content => #{
+                    'application/json' => #{
+                        schema => #{
+                            type => object,
+                            properties => #{
+                                msg => #{
+                                    type => string}}}},
+                  'text/plain' => #{
+                        schema => #{
+                            type => string}}}}}}},
+  {"/hello", MetaData, hello}.
+
+hello(get, #{bindings := Bindins,
+             body := Body,
+             query_string := QueryString,
+             headers := Headers}) ->
+    Content = maps:get(<<"accept">>, Headers),
+    Body =
+        case Content of
+            <<"text/plain">> ->
+                <<"hello, minirest">>;
+             <<"application/json">> ->
+                #{msg => <<"hello minirest">>}
+        end,
+    {200, #{<<"content-type">> => Content},  Body}.
+
+
+% Supports callback functions for 2/3 parameters
+% The first parameter is Method
+% The second argument is the parsed parameters, including (bindings, query_string, headers, body)
+% The third argument is the request of cowboy
+
+hello(Method, #{bindings := Bindins,
+                body := Body,
+                query_string := QueryString,
+                headers := Headers}, Request) ->
+    Content = maps:get(<<"accept">>, Headers),
+    Body =
+        case Content of
+            <<"text/plain">> ->
+                <<"hello, minirest">>;
+             <<"application/json">> ->
+                #{msg => <<"hello minirest">>}
+        end,
+    {200, #{<<"content-type">> => Content},  Body}.
